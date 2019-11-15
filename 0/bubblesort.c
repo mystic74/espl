@@ -1,25 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void bubbleSort(int numbers[], int array_size) {
+void bubbleSort(int numbers[], int array_size)
+{
     int i, j;
-    int *temp;
-    for (i = (array_size - 1); i > 0; i--) {
-        for (j = 1; j <= i; j++) {
-            if (numbers[j - 1] > numbers[j]) {
-                temp = (int *) malloc(sizeof(int *));
+    int *temp = NULL;
+
+    /* Going through the array */
+    for (i = (array_size - 1); i > 0; i--)
+    {
+        for (j = 1; j <= i; j++)
+        {
+            if (numbers[j - 1] > numbers[j])
+            {
+                temp = (int *)malloc(sizeof(int *));
                 *temp = numbers[j - 1];
                 numbers[j - 1] = numbers[j];
                 numbers[j] = *temp;
+
+                if (temp != NULL)
+                    free(temp);
             }
         }
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     char **arr = argv + 1;
     int i, n = argc - 1;
-    int *numbers = (int *) calloc(n, sizeof(int));
+    int *numbers = (int *)calloc(n, sizeof(int));
+    if (numbers == NULL)
+    {
+        printf("Failed to calloc memory \n");
+    }
 
     printf("Original array:");
     for (i = 0; i < n; ++i)
@@ -35,6 +49,12 @@ int main(int argc, char **argv) {
     for (i = 0; i < n; ++i)
         printf(" %d", numbers[i]);
     printf("\n");
+
+    if (numbers != NULL)
+    {
+        free(numbers);
+        numbers = NULL;
+    }
 
     return 0;
 }
