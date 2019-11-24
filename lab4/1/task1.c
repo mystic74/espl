@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-extern int funcA(char ch1);
+extern int funcA(char* ch1);
 
 int main(int argc, char **argv){
   int res;
@@ -11,9 +11,9 @@ int main(int argc, char **argv){
   }
   
   char* ch1 = *(argv+1);
-  
-  res = funcA('a');
-  printf("The %d length \n",res);
+  res = funcA(ch1);
+  printf("Recived string %s \n", ch1);
+  printf("The length of the string is %d  \n",res);
 	
   return 0;
 }

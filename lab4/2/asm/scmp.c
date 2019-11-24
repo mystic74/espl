@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+extern int my_strcmp(char* ch1, char* ch2);
+ 
 int main(int argc, char **argv) {
 	int cmp;
 	char *rel;
