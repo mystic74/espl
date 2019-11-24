@@ -17,7 +17,7 @@ str_cmp_loop:
 	 mov  dl,  byte [eax + ecx] ; taking the value at pointer eax + value of ecx
      mov  dh,  byte [ebx + ecx] ; taking the value at pointer ebx + value of ecx
      inc ecx
-     cmp al, 0
+     cmp dl, 0
      je F_FINISHED
      cmp dh, dl  ; Check null term
      je str_cmp_loop
