@@ -11,7 +11,7 @@ utoa_s:
 	mov ebp, esp ;stack maintenance
 	push ecx;
 	push ebx;
-
+    push edx;
     mov eax, [ebp+8] ; number to be converted
 	mov ecx, 10 ; divisor
     xor edx, edx
@@ -21,15 +21,23 @@ utoa_s:
 divide:
     xor edx, edx        ; high part = 0
     div ecx             ; eax = edx:eax/ecx, edx = remainder
-    ;push dx             ; DL is a digit in range [0..9]
-    add dl, '0' ; Convert to ASCII
-    mov byte [strResult + ebx], dl
-    inc ebx              ; count digits
+    add dx, '0'         ; Convert to ASCII
+    push dx
+    inc ebx             ; count digits
     test eax, eax       ; EAX is 0?
     jnz divide          ; no, continue
 
+; Now using eax as a counter!
+reverse_string:
+    pop dx
+    mov byte [strResult + eax], dl; DL is a ascii in range [0..9]
+    inc eax
+    dec ebx
+    jnz reverse_string
+
     mov eax, strResult
 FINISH:
+    pop edx
 	pop ebx;
 	pop ecx;
 	mov esp, ebp ;stack maintenance
