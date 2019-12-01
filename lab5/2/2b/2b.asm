@@ -1,11 +1,8 @@
 section .data
   file db "testfile",0 ;filename ends with '\0' byte
-  fmtint  db  "%d", 10, 0
-  fmtstr  db  "%s", 10, 0
   word_count_str  db  "-w", 0
   words_count db 0; Boolean, actually.
-  argcstr     db `argc = %d\n\0`      ; backquotes for C-escapes
-  argvstr     db `argv[%u] = %s\n\0`
+  argcstr     db `words = %d\n\0`      ; backquotes for C-escapes
 section .bss
   descriptor resb 4 ;memory for storing descriptor
   buffer resb 1025
@@ -171,6 +168,7 @@ FINISH_CHECK_BUFF_LOOP:
   cmp eax, ecx
   jne FINISH_BUFFER_LOOP  
 
+DONE:
   ; Debug print
     mov eax, [ebp - 8]
     push eax
