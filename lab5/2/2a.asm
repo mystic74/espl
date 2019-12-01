@@ -1,12 +1,13 @@
 section .data
-  file db "text.txt",0 ;filename ends with '\0' byte
+  file db "testfile",0 ;filename ends with '\0' byte
 section .bss
   descriptor resb 4 ;memory for storing descriptor
-  buffer resb 1024
+  buffer resb 1025
   len equ 1024
-section .start
-global _start
-_start:
+section .text
+         global main
+
+main:
   mov eax,5 ;open
   mov ebx,file ;filename
   mov ecx,0 ;read only
@@ -22,7 +23,7 @@ _start:
 
   mov edx,eax ;storing count of readed bytes to edx
   mov eax,4 ;write to file
-  mov ebx,1 ;terminal
+  mov ebx,1 ; stdout
   mov ecx,buffer ;from buffer
   int 80h ;write to terminal all readed bytes from buffer
 
