@@ -1,8 +1,10 @@
+TO_ASM := -masm=intel -S
+
 %.o: %.asm
 	nasm -g -O1 -f elf -o $@ $<
 
 %.o: %.c
-	gcc -m32 -g -nostdlib -fno-stack-protector -c -o $@ $<
+	gcc -m32 -g  -nostdlib -fno-stack-protector -c -o $@ $<
 
 all: lwca
 
