@@ -5,7 +5,7 @@ section .data
   word_count_str  db  "-w", 0
   words_count db 0; Boolean, actually.
   argcstr     db `argc = %d\n\0`      ; backquotes for C-escapes
-    argvstr     db `argv[%u] = %s\n\0`
+  argvstr     db `argv[%u] = %s\n\0`
 section .bss
   descriptor resb 4 ;memory for storing descriptor
   buffer resb 1025
@@ -44,8 +44,6 @@ main:
     test eax, eax               ; Null pointer?
     je .J2                      ; Yes -> end of loop
     push eax                    ; Pointer to string
-    ;push ebx                    ; Integer
-    ;push argvstr                ; Pointer to format string
     push word_count_str
     call cmpstr
     
@@ -93,16 +91,17 @@ READ_ME:
 
 CNTWORDS:
   pop eax ; Get the read bytes from before, don't need this actually
-  mov eax, 0 ; Zero the counter
+  add eax, buffer
+  ;mov eax, 0 ; Zero the counter
   mov edx, [ebp - 8]; words count; should start at zero and get bigger.
   mov ecx,buffer
 ; Setting the while loop on the buffer
 BUFFER_LOOP:
-  cmp byte[ecx + eax], ctab
+  cmp byte[ecx], ctab
   je ZERO_IN_WORD
-  cmp byte[ecx + eax], cspace
+  cmp byte[ecx], cspace
   je ZERO_IN_WORD
-  cmp byte[ecx + eax], cnewline
+  cmp byte[ecx], cnewline
   je ZERO_IN_WORD
   mov ebx, [ebp - 8] ; Get the current words amount
   mov edx, [ebp - 12] ; Get in_words at edx.
@@ -120,11 +119,15 @@ ZERO_IN_WORD:
   mov [ebp - 12], edx ; Set in_words as zero.
 
 CHECK_BUFF_LOOP:
-  inc eax
-  cmp eax, len
+  inc ecx
+  cmp eax, ecx
   jne BUFFER_LOOP  
   jmp READ_ME
 FINISH_READ:
+  push eax
+  mov eax, [ebp - 4]  ; Get the -w parameter
+  test eax, eax
+  jnz FINISH_COUNT
   mov edx,eax ;storing count of readed bytes to edx
   mov eax,4 ;write to file
   mov ebx,1 ; stdout
@@ -134,7 +137,39 @@ FINISH_READ:
   mov eax,6 ;close file
   mov ebx,[descriptor] ;your file descriptor
   int 80h ;close your file
+FINISH_COUNT:
+  pop eax ; Get the read bytes from before, don't need this actually
+  add eax, buffer
+  ;mov eax, 0 ; Zero the counter
+  mov edx, [ebp - 8]; words count; should start at zero and get bigger.
+  mov ecx,buffer
+; Setting the while loop on the buffer
+FINISH_BUFFER_LOOP:
+  cmp byte[ecx], ctab
+  je FINISH_ZERO_IN_WORDS
+  cmp byte[ecx], cspace
+  je FINISH_ZERO_IN_WORDS
+  cmp byte[ecx], cnewline
+  je FINISH_ZERO_IN_WORDS
+  mov ebx, [ebp - 8] ; Get the current words amount
+  mov edx, [ebp - 12] ; Get in_words at edx.
+  cmp edx, 0
+  jne FINISH_SET_IN_WORDS
+  inc ebx
+  mov [ebp - 8], ebx
+FINISH_SET_IN_WORDS:
+  mov edx, 1
+  mov [ebp - 12], edx ; Set in_words as 1 regardless
+  jmp FINISH_CHECK_BUFF_LOOP ; Loop again
 
+FINISH_ZERO_IN_WORDS:
+  mov edx, 0 
+  mov [ebp - 12], edx ; Set in_words as zero.
+
+FINISH_CHECK_BUFF_LOOP:
+  inc ecx
+  cmp eax, ecx
+  jne FINISH_BUFFER_LOOP  
 
   ; Debug print
     mov eax, [ebp - 8]
