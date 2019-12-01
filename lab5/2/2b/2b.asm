@@ -14,6 +14,7 @@ section .text
         global main
         extern cmpstr ; From lab 4
         extern printf ;
+        extern utoa_s
 
 main:
 
@@ -39,7 +40,7 @@ main:
     push eax                    ; Pointer to string
     push word_count_str
     call cmpstr
-    
+    add esp, 8
     cmp eax, 0
     jne .Diff
     mov eax, 1
@@ -47,7 +48,6 @@ main:
     mov eax, 0
     ;call printf                 ; Call libc
     .Diff:
-    add esp, (2*4)              ; Adjust stack by 3 arguments
     inc ebx
     jmp .J1                     ; Loop
     .J2:
@@ -124,12 +124,28 @@ DONE:
   mov ebx,[descriptor] ;your file descriptor
   int 80h ;close your file
 
+  mov eax, [ebp - 8]  ; Get the -w parameter
+  test eax, eax
+  jz FINISH
+  mov eax, [ebp - 8] ; The count of words
+  push eax
+  call utoa_s
+  add esp, 4
+  
+  mov ecx, file
+  mov eax,4 ;write to file
+  mov ebx, 1 ; stdout
+  mov edx,32 ;storing count of readed bytes to edx
+	int 80h ;write to terminal all readed bytes from buffer
+	
+
+  
   ; Debug print
-    mov eax, [ebp - 8]
-    push eax
-    push argcstr
-    call printf
-    add esp, (2*4)
+  ;  mov eax, [ebp - 8]
+  ;  push eax
+  ;  push argcstr
+  ;  call printf
+  ;  add esp, (2*4)
   ; Done
 FINISH:
   pop esi                     ; Epilog
