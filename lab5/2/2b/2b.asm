@@ -10,6 +10,9 @@ section .bss
   descriptor resb 4 ;memory for storing descriptor
   buffer resb 1025
   len equ 50
+  ctab equ 9
+  cspace equ 32
+  cnewline equ 10
 section .text
         global main
         extern cmpstr ; From lab 4
@@ -77,9 +80,9 @@ READ_ME:
   jne FINISH_READ
   
   push eax
-  mov eax, [ebp - 4] 
+  mov eax, [ebp - 4]  ; Get the -w parameter
   test eax, eax
-  jnz CNTWORDS 
+  jnz CNTWORDS  ; jump if its set to 1.
   pop eax
   mov edx,eax ;storing count of readed bytes to edx
   mov eax,4 ;write to file
@@ -87,16 +90,40 @@ READ_ME:
   mov ecx,buffer ;from buffer
   int 80h ;write to terminal all readed bytes from buffer
   jmp READ_ME
-CNTWORDS:
-  pop eax ; Get the read bytes from before.
-;  mov edx, eax
-;CHAR_LOOP:
-;  dec edx ; ?????
-;  mov eax, 0 ; words counter
-;  mov ebx, 0 ; char index
-;  cmp edx
-;  jnz CHAR_LOOP
 
+CNTWORDS:
+  pop eax ; Get the read bytes from before, don't need this actually
+  mov eax, 0 ; Zero the counter
+  mov edx, [ebp - 8]; words count; should start at zero and get bigger.
+  mov ecx,buffer
+; Setting the while loop on the buffer
+BUFFER_LOOP:
+  cmp byte[ecx + eax], ctab
+  je ZERO_IN_WORD
+  cmp byte[ecx + eax], cspace
+  je ZERO_IN_WORD
+  cmp byte[ecx + eax], cnewline
+  je ZERO_IN_WORD
+  mov ebx, [ebp - 8] ; Get the current words amount
+  mov edx, [ebp - 12] ; Get in_words at edx.
+  cmp edx, 0
+  jne SET_IN_WORDS
+  inc ebx
+  mov [ebp - 8], ebx
+SET_IN_WORDS:
+  mov edx, 1
+  mov [ebp - 12], edx ; Set in_words as 1 regardless
+  jmp CHECK_BUFF_LOOP ; Loop again
+
+ZERO_IN_WORD:
+  mov edx, 0 
+  mov [ebp - 12], edx ; Set in_words as zero.
+
+CHECK_BUFF_LOOP:
+  inc eax
+  cmp eax, len
+  jne BUFFER_LOOP  
+  jmp READ_ME
 FINISH_READ:
   mov edx,eax ;storing count of readed bytes to edx
   mov eax,4 ;write to file
@@ -110,7 +137,7 @@ FINISH_READ:
 
 
   ; Debug print
-    mov eax, [ebp - 4]
+    mov eax, [ebp - 8]
     push eax
     push argcstr
     call printf
