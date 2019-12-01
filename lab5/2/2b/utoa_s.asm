@@ -2,7 +2,7 @@ section .text
 	global utoa_s ;make my open transparent to other modules
 
 section .data
-    strResult  times 33 db 0 ; string buffer to store results
+    strResult  times 35 db 0 ; string buffer to store results
     my_string_length: equ 31
 
 
@@ -35,6 +35,7 @@ reverse_string:
     dec ebx
     jnz reverse_string
 
+    mov byte [ strResult + eax], 10 
     mov eax, strResult
 FINISH:
     pop edx

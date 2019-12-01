@@ -132,7 +132,7 @@ DONE:
   call utoa_s
   add esp, 4
   
-  mov ecx, file
+  mov ecx, eax
   mov eax,4 ;write to file
   mov ebx, 1 ; stdout
   mov edx,32 ;storing count of readed bytes to edx
