@@ -1,30 +1,34 @@
 section .data
-  file db "testfile",0 ;filename ends with '\0' byte
-  word_count_str  db  "-w", 0
-  words_count db 0; Boolean, actually.
-  argcstr     db `words = %d\n\0`      ; backquotes for C-escapes
+	file db "test.txt", 0 ; filename
+	word_count_str db "-w",0
 section .bss
-  descriptor resb 4 ;memory for storing descriptor
-  buffer resb 1025
-  len equ 50
-  ctab equ 9
-  cspace equ 32
-  cnewline equ 10
+	descriptor resb 4 ; mem for the file descriptor
+	buffer resb 60
+	len equ 50
+	
+	ctab equ 9
+	cspace equ 32
+	cnewline equ 10
+
+	sys_open equ 5
+	sys_read equ 3
+	sys_close equ 6 
+	sys_write equ 4
 section .text
-        global main
-        extern cmpstr ; From lab 4
-        extern printf ;
-        extern utoa_s
+	global main
+	extern cmpstr ; lab 4
+	extern utoa_s ; from task1b
 
 main:
 
     push ebp                    ; Prolog
     mov ebp, esp
-    sub esp, 12                  ; Allocate local variable
+    sub esp, 20                  ; Allocate local variable
     mov eax, 0
     mov [ebp - 4], eax          ; zero for -w counter
     mov [ebp - 8], eax          ; zero for words count
     mov [ebp - 12], eax         ; in_words var
+    mov [ebp - 16], eax 		; using file
     push ebx                    ; Callee saved registers
     push esi
 
@@ -32,7 +36,7 @@ main:
     cmp eax, 1
     je .J2
     mov esi, [ebp + 12]         ; **argv
-    mov ebx, 0                  ; Index of argv
+    mov ebx, 1                  ; Index of argv
     .J1:
     mov eax, [esi + ebx * 4]    ; *argv[ebx]
     test eax, eax               ; Null pointer?
@@ -46,39 +50,56 @@ main:
     mov eax, 1
     mov [ebp - 4], eax
     mov eax, 0
+    jmp .ReLoop
     ;call printf                 ; Call libc
     .Diff:
+    mov eax, 1
+    mov [ebp - 16], eax
+    mov eax, [esi + ebx * 4]
+    mov [ebp - 20], eax
+   	.ReLoop:
     inc ebx
     jmp .J1                     ; Loop
     .J2:
 
+CHOOSE_FILE:
+  mov eax, [ebp - 16]
+  cmp eax, 1
+  mov ebx, file
+  jne READ_FILE
+  mov ebx, [ebp - 20]
 READ_FILE:
-  mov eax,5 ;open
-  mov ebx,file ;filename
+  ;mov ebx,file ;filename
+  mov eax, sys_open ;open
   mov ecx,0 ;read only
   int 80h ;open filename for read only
 
   mov [descriptor],eax ;storing the descriptor
 
 READ_ME:
-  mov eax,3 ;read from file
+  mov eax,sys_read ;read from file
   mov ebx,[descriptor] ;your file descriptor
   mov ecx,buffer ;read to buffer
   mov edx,len ;read len bytes
   int 80h ;read len bytes to buffer from file
-  push eax
+
+  push eax ; backup the current amount read
+
   mov eax, [ebp - 4]  ; Get the -w parameter
   test eax, eax
   jnz CNTWORDS  ; jump if its set to 1.
   
   mov edx,[esp] ;storing count of read bytes to edx
-  mov eax,4 ;write to file
+  mov eax,sys_write ;write to file
   mov ebx,1 ; stdout
   mov ecx,buffer ;from buffer
   int 80h ;write to terminal all read bytes from buffer
+
+  ; lets see if we need to loop again
   pop eax
   cmp eax, len
   je READ_ME
+  
   jmp DONE
 CNTWORDS:
   mov eax, [esp]
@@ -120,7 +141,7 @@ CHECK_BUFF_LOOP:
 
 
 DONE:
-  mov eax,6 ;close file
+  mov eax,sys_close ;close file
   mov ebx,[descriptor] ;your file descriptor
   int 80h ;close your file
 
@@ -133,20 +154,12 @@ DONE:
   add esp, 4
   
   mov ecx, eax
-  mov eax,4 ;write to file
+  mov eax,sys_write ;write to file
   mov ebx, 1 ; stdout
   mov edx,32 ;storing count of readed bytes to edx
 	int 80h ;write to terminal all readed bytes from buffer
 	
 
-  
-  ; Debug print
-  ;  mov eax, [ebp - 8]
-  ;  push eax
-  ;  push argcstr
-  ;  call printf
-  ;  add esp, (2*4)
-  ; Done
 FINISH:
   pop esi                     ; Epilog
   pop ebx

@@ -9,16 +9,10 @@ global strlen
 
 extern main
 _start:
-
-	;TODO: handles command line input parameters
-	pop    dword ecx    ; ecx = argc
-	mov    ebx,esp      ; ebx = argv
-	push   ebx   ; char** argv
-	push   ecx   ; int argc
-
-	;push dword[esp + 8]
-	;push dword[esp + 4]
-	;add esp, 20
+	pop dword ecx
+	mov ebx, esp
+	push ebx
+	push ecx
 	call	main
     mov     ebx,eax
 	mov	eax,1
@@ -58,7 +52,6 @@ write:
 	mov esp, ebp ;stack maintenance
 	pop ebp ;stack maintenance
 	ret ;stack maintenance
-
 open:
 	push ebp ;stack maintenance
 	mov ebp, esp ;stack maintenance
@@ -77,15 +70,17 @@ close:
 	push ebp ;stack maintenance
 	mov ebp, esp ;stack maintenance
 	push ebx;
-	mov eax, [ebp+8] ; syscall number
-	mov ebx, [ebp+12] ; fd number
+	mov eax, 6 ; syscall number
+	mov ebx, [ebp+8] ; fd number
     int 80h
 	pop ebx;
 	mov esp, ebp ;stack maintenance
 	pop ebp ;stack maintenance
 	
 	ret ;stack maintenance
+
 strlen:
+	; Copied from previous lab funcA file...
 	push	ebp
 	mov	ebp, esp
 	push ebx;
@@ -106,3 +101,4 @@ FINISH:
 	mov esp, ebp
 	pop ebp
 	ret
+
