@@ -46,12 +46,12 @@ void restore_file(node *diff_list,FILE* r_file, unsigned int number_of_changes)
 		
 		/* Setting the offset in file.*/
 		fseek(r_file, diff_list->diff_data->offset, SEEK_SET);
-		/*Edit the file*/
-        fputc_r = fputc(diff_list->diff_data->new_value, r_file);
+        fputc_r = fputc(diff_list->diff_data->orig_value, r_file);
 		if (fputc_r == EOF)
-			{
-				printf("error on putc\n");
-			}
+		{
+			printf("error on putc\n");
+		}
+		
 		diff_list = diff_list->next;
 		number_of_changes--;
     }
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 	diff* new_diff = NULL;
 	node* my_list = NULL;
 
-	unsigned int file_index = 0;
+	unsigned int file_index = -1;
 	unsigned int argv_index = 0;
 
 	unsigned int total_diff 		= 0;
@@ -119,17 +119,8 @@ int main(int argc, char** argv)
 		else if (strcmp(RESTORE_PARAM, argv[argv_index]) == 0)
 		{
 			n_restore_param_cond = RESTORE_ALL;
-/*			int_checker = sscanf(argv[argv_index + 1], "%d%c", &value, &ch);*/
 			lnum = strtol(argv[argv_index + 1], &end, 10);        /* 10 specifies base-10 */
 			
-			
-			/*
-			//if (int_checker != 1)
-			//{
-			//	n_restore_param_cond = RESTORE_NUMERIC;
-			//	n_restore_param_amnt = value;
-			//}*/
-
 			if (end == argv[argv_index + 1])     /*if no characters were converted these pointers are equal*/
 			{
 					fprintf(stderr, "ERROR: can't convert string to number\n");
