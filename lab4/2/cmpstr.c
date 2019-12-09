@@ -1,9 +1,3 @@
-#include <string.h>
-#include <stdio.h>
-
-
-extern int cmpstr(char* ch1, char* ch2);
-
 int cmpstr(const char *s1, const char *s2)
 {
 	unsigned index = 0;
