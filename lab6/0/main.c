@@ -5,11 +5,54 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <linux/limits.h>
 
 #include "LineParser.h"
 
 #define MAX_INPUT 2048 
 
+char* home_replacer(const char* curr_str)
+{
+    char*  newpath;
+    char* pathvar = getenv("HOME");
+    unsigned int index = 0;
+    char* last_tilda = NULL;
+    /*last_tilda = strrchr(curr_str, 126);*/
+    if (curr_str[0] == 126)
+        last_tilda = curr_str;
+    
+    if (last_tilda == NULL)
+        return NULL;
+
+    else
+    {
+        newpath = (char*)malloc(PATH_MAX);
+        strcat(newpath, pathvar);
+        index = strlen(pathvar);
+        last_tilda++; /* Go over the ~*/ 
+        while(*last_tilda != '\0')
+        {
+            newpath[index] = *last_tilda;
+            index++;
+            last_tilda++;
+        }
+        return newpath;
+    }
+}
+
+int arg_shifter(cmdLine* mycommand)
+{
+    int index = 0;
+    char* replaceStr; 
+    for (index = 1 /* 1 or 0? */ ; index < mycommand->argCount; index++)
+    {
+        replaceStr = home_replacer(mycommand->arguments[index]);
+        if (replaceStr != NULL)
+            replaceCmdArg(mycommand, index, replaceStr);
+    }
+
+    return 1;
+}
 void curr_dir()
 {
     char buf[MAX_ARGUMENTS];
@@ -20,7 +63,7 @@ void curr_dir()
 }
 
 int cd_impl(cmdLine *parsedLine)
-    {
+{
     if (chdir(parsedLine->arguments[1]) == -1)
     {
         perror("Failed to change dir");
@@ -44,11 +87,13 @@ int main(int argc, char **argv)
             break;
 
         parsedLine = parseCmdLines(input);
+        arg_shifter(parsedLine);
         cpid = fork();
 
         /* In the child scope*/
         if (cpid == 0)
         {
+            
             printf("%d", execvp(parsedLine->arguments[0], parsedLine->arguments));
             _exit(1);
         }
@@ -62,7 +107,7 @@ int main(int argc, char **argv)
             else
             {
                 waitpid(-1, &status, 0);
-        }
+            }
             freeCmdLines(parsedLine);
         }
     }
