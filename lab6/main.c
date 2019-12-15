@@ -7,9 +7,13 @@
 #include <string.h>
 #include <linux/limits.h>
 
+#include "list_utils.c"
+
 #include "LineParser.h"
 
+#define list_size 15
 #define MAX_INPUT 2048 
+#define MAX_CHILDS 300
 
 char* home_replacer(const char* curr_str)
 {

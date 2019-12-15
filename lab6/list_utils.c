@@ -2,46 +2,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/*void list_print(node *diff_list,FILE* output)
+static int list_size = 0;
+
+node* alloc_list_size(int size_of_list)
 {
-    while (diff_list != NULL)
-    {
-        fprintf(output, "byte %lu %02X %02X \n",
-                diff_list->diff_data->offset,
-                diff_list->diff_data->orig_value,
-                diff_list->diff_data->new_value);
+	int i = 0;
+	node* my_list = NULL;
 
-        diff_list = diff_list->next;
+	for (i = 0; i < size_of_list, i++)
+	{
+		command* first_diff = (command*) malloc(sizeof(command));
+		my_list = reg_list_append(first_diff);
+	}
 
-    }
+	return my_list;
 }
 
-void print_list_amount(node *diff_list,FILE* output)
+int get_list_size()
 {
-	unsigned int diff_amount = 0;
-    while (diff_list != NULL)
-    {
-        diff_amount++;
-        diff_list = diff_list->next;
-    }
-
-    fprintf(output, "%u", diff_amount);
+	return list_size;
 }
-
-void p_list_print(node *diff_list,FILE* output, int amount)
-{
-    while ((diff_list != NULL) && (amount > 0))
-    {
-        fprintf(output, "byte %lu %02X %02X \n",
-                diff_list->diff_data->offset,
-                diff_list->diff_data->orig_value,
-                diff_list->diff_data->new_value);
-
-        diff_list = diff_list->next;
-        amount--;
-    }
-}
-*/
 
 /**
 * This function allocates a new node, and appends it to the end of the list.
@@ -49,6 +29,7 @@ void p_list_print(node *diff_list,FILE* output, int amount)
 */
 node* reg_list_append(node* diff_list, char* data)
 {
+
 	node* n_node = (node*)malloc(sizeof(node));
 	node* head_node = diff_list;
 	n_node->curr_command = data;
@@ -57,12 +38,51 @@ node* reg_list_append(node* diff_list, char* data)
 	if (diff_list == NULL)
 		return n_node;
 
+	/* Go to the end of the list */
 	while(diff_list->next != NULL)
 	{
 		diff_list = diff_list->next;
 	}
 
+	/* Add the current node.*/
 	diff_list->next = n_node;
+	n_node-> perv = diff_list;
+
+	list_size ++;
+
+	return head_node;
+}
+
+
+
+/**
+* This function allocates a new node, and appends it to the location specified.
+* remember to free it at the end.
+*/
+node* reg_list_edit_at_loc(node* diff_list, char* data, int loc)
+{
+
+
+	node* n_node = (node*)malloc(sizeof(node));
+	node* head_node = diff_list;
+	n_node->curr_command = data;
+	n_node->next = NULL;
+
+	if (diff_list == NULL)
+		return n_node;
+
+	/* Go to the end of the list */
+	while((diff_list->next != NULL) && (loc > 0))
+	{
+		diff_list = diff_list->next;
+		loc--;
+	}
+
+	/* Add the current node.*/
+	diff_list->next = n_node;
+	n_node-> perv = diff_list;
+
+	list_size++;
 
 	return head_node;
 }
@@ -76,12 +96,18 @@ node* list_append(node* diff_list, command* data)
 {
 	node* n_node = (node*)malloc(sizeof(node));
 
-
+	/* Set me as head.*/
 	n_node->curr_command = data;
 	n_node->next = diff_list;
+	n_node->perv = NULL;
 
+	diff_list->perv = n_node;
+	
+	list_size++;
 	return n_node;
 }
+
+
 
 void list_free(node *diff_list)
 {
@@ -96,4 +122,6 @@ void list_free(node *diff_list)
 		if (curr_node != NULL)
 			free(curr_node);
 	}
+
+	list_size--;
 }
