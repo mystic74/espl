@@ -81,7 +81,12 @@ int main(int argc, char **argv)
     char input[MAX_INPUT];
     pid_t cpid = 0;
     int status = 0;
+    int command_index = 0;
     cmdLine *parsedLine = NULL;
+
+    node* command_list = NULL;
+
+    command_list = alloc_list_size(list_size);
 
     while (1)
     {
@@ -93,6 +98,8 @@ int main(int argc, char **argv)
         parsedLine = parseCmdLines(input);
         arg_shifter(parsedLine);
         cpid = fork();
+
+        reg_list_edit_at_loc(command_list, )
 
         /* In the child scope*/
         if (cpid == 0)

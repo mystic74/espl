@@ -1,5 +1,7 @@
+#define MAX_INPUT 2048 
+
 typedef struct command {
-    char* str; /* The command were saving */
+    char str[MAX_INPUT]; /* The command were saving */
 } command;
 
 typedef struct node node;

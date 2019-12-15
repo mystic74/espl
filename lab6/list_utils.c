@@ -4,20 +4,6 @@
 
 static int list_size = 0;
 
-node* alloc_list_size(int size_of_list)
-{
-	int i = 0;
-	node* my_list = NULL;
-
-	for (i = 0; i < size_of_list, i++)
-	{
-		command* first_diff = (command*) malloc(sizeof(command));
-		my_list = reg_list_append(first_diff);
-	}
-
-	return my_list;
-}
-
 int get_list_size()
 {
 	return list_size;
@@ -27,7 +13,7 @@ int get_list_size()
 * This function allocates a new node, and appends it to the end of the list.
 * remember to free it at the end.
 */
-node* reg_list_append(node* diff_list, char* data)
+node* reg_list_append(node* diff_list, command* data)
 {
 
 	node* n_node = (node*)malloc(sizeof(node));
@@ -46,7 +32,7 @@ node* reg_list_append(node* diff_list, char* data)
 
 	/* Add the current node.*/
 	diff_list->next = n_node;
-	n_node-> perv = diff_list;
+	n_node-> prev = diff_list;
 
 	list_size ++;
 
@@ -55,11 +41,18 @@ node* reg_list_append(node* diff_list, char* data)
 
 
 
+
+node* reg_list_edit_at_loc_allocatec(node* diff_list, int loc)
+{
+	command* first_diff = (command*) malloc(sizeof(command));
+	my_list = reg_list_append(my_list, first_diff);
+
+}
 /**
 * This function allocates a new node, and appends it to the location specified.
 * remember to free it at the end.
 */
-node* reg_list_edit_at_loc(node* diff_list, char* data, int loc)
+node* reg_list_edit_at_loc(node* diff_list, command* data, int loc)
 {
 
 
@@ -80,7 +73,7 @@ node* reg_list_edit_at_loc(node* diff_list, char* data, int loc)
 
 	/* Add the current node.*/
 	diff_list->next = n_node;
-	n_node-> perv = diff_list;
+	n_node-> prev = diff_list;
 
 	list_size++;
 
@@ -99,9 +92,9 @@ node* list_append(node* diff_list, command* data)
 	/* Set me as head.*/
 	n_node->curr_command = data;
 	n_node->next = diff_list;
-	n_node->perv = NULL;
+	n_node->prev = NULL;
 
-	diff_list->perv = n_node;
+	diff_list->prev = n_node;
 	
 	list_size++;
 	return n_node;
@@ -124,4 +117,19 @@ void list_free(node *diff_list)
 	}
 
 	list_size--;
+}
+
+
+node* alloc_list_size(int size_of_list)
+{
+	int i = 0;
+	node* my_list = NULL;
+
+	for (i = 0; i < size_of_list; i++)
+	{
+		command* first_diff = (command*) malloc(sizeof(command));
+		my_list = reg_list_append(my_list, first_diff);
+	}
+
+	return my_list;
 }
