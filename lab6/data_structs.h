@@ -1,7 +1,8 @@
-#define MAX_INPUT 2048 
+#define MY_MAX_INPUT 2048 
 
 typedef struct command {
-    char str[MAX_INPUT]; /* The command were saving */
+    int n_command_index;
+    char str[MY_MAX_INPUT]; /* The command were saving */
 } command;
 
 typedef struct node node;
