@@ -26,6 +26,7 @@ char* get_string_for_index(node* listy, int index)
 		{
 			return listy->curr_command->str;
 		}
+		listy = listy->next;
 	}
 	return NULL;
 }

@@ -56,7 +56,7 @@ char* exclamation_replacer(const char* curr_str, node* command_list)
     tempstr = get_string_for_index(command_list, index);
 
     nstring = (char*) malloc(strlen(tempstr) + 2);
-
+    nstring[0] = 0;
     strcat(nstring, tempstr);
 
     return nstring;
@@ -121,13 +121,16 @@ int main(int argc, char **argv)
 
         parsedLine = parseCmdLines(input);
         arg_shifter(parsedLine, command_list);
+        
+        command_list = list_edit_at_loc_allocatec(command_list, input, command_index);
+
         if (strcmp(parsedLine->arguments[0], "cd") == 0)
         {
             cd_impl(parsedLine);
         }
         else if (strcmp(parsedLine->arguments[0], "history") == 0)
         {
-            if (strcmp(parsedLine->arguments[1], "-d") == 0)
+            if ((parsedLine->argCount > 1) && (strcmp(parsedLine->arguments[1], "-d") == 0))
             {
                 command_list = node_removal(command_list, atoi(parsedLine->arguments[2]));
             }
@@ -136,11 +139,8 @@ int main(int argc, char **argv)
         }
         else
         {
-        
-            
+           
             cpid = fork();
-
-            
 
             /* In the child scope*/
             if (cpid == 0)
@@ -157,11 +157,10 @@ int main(int argc, char **argv)
                     waitpid(-1, &status, 0);
                 }
             }
-
-            command_list = list_edit_at_loc_allocatec(command_list, input, command_index);
-            freeCmdLines(parsedLine);
-            command_index++;
         }
+        
+        freeCmdLines(parsedLine);
+        command_index++;
     }
     list_free(command_list);
     return 1;
