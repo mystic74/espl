@@ -66,6 +66,9 @@ int arg_shifter(cmdLine* mycommand, node* command_list)
 {
     int index = 0;
     char* replaceStr; 
+    if (mycommand == NULL)
+        return 1;
+
     for (index = 0 /* 1 or 0? */ ; index < mycommand->argCount; index++)
     {
         replaceStr = home_replacer(mycommand->arguments[index]);
@@ -106,9 +109,7 @@ int main(int argc, char **argv)
     int status = 0;
     int command_index = 0;
     cmdLine *parsedLine = NULL;
-
     node* command_list = NULL;
-
     command_list = alloc_list_size(list_size);
 
     while (1)
