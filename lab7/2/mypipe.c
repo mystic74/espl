@@ -1,6 +1,3 @@
-// C program to illustrate 
-// pipe system call in C 
-// shared by Parent and Child 
 #include <stdio.h> 
 #include <unistd.h> 
 #include <stdio.h>
@@ -20,8 +17,7 @@ char* msg1 = "hello";
 char* first_cmd = "ls";
 char* second_cmd = "tail";
 
-char* first_cmd_args[] = {"-l"};
-char* second_cmd_args[] = {"-n", "2"};
+char* second_cmd_args[] = {"-n\0", "2\0"};
 
 void execute_ls(int p[2]);
 void execule_tail(int p[2]);
@@ -41,26 +37,45 @@ void (*funcs[])(int p[2]) = {execute_ls, execule_tail};
 void execute_ls(int p[2])
 {
     int r_val;
-    fprintf(stderr,"(child1>redirecting stdout to the write end of the pipe…)");
+    fprintf(stderr,"(child1>redirecting stdout to the write end of the pipe…)\n");
     replace_stdout(p[0]);
-    fprintf(stderr, "(child1>going to execute cmd: …)");
-    r_val = execvp(first_cmd, first_cmd_args);
-    _exit(1);
+    fprintf(stderr, "(child1>going to execute cmd: …)\n");
+
+    printf("Hello, i'm child (pid %d)\n", (int)getpid());
+
+    char* myargs[2];
+    myargs[0] = strdup("ls");
+    myargs[1] = strdup("-l\0");
+    myargs[2] = NULL;
+    
+ /*   execvp(myargs[0], myargs);
+    */
+   write(STDOUT_FILENO, "Hi\n", sizeof("Hi\n"));    
 }
 
 void execule_tail(int p[2])
 {
+    
     int r_val;
-    fprintf(stderr, "(child2>redirecting stdin to the read end of the pipe…)");
+    fprintf(stderr, "(child2>redirecting stdin to the read end of the pipe…)\n");
     replace_stdin(p[1]);
-    fprintf(stderr, "(child2>going to execute cmd: …)");
-    r_val = execvp(second_cmd, second_cmd_args);
+    fprintf(stderr, "(child2>going to execute cmd: …)\n");
+    
+    
+    /*r_val = execvp(second_cmd, second_cmd_args);*/
+    char* myargs[3];
+    myargs[0] = strdup("tail");
+    myargs[1] = strdup("-n 2");
+    myargs[2] = NULL;
+    myargs[3] = NULL;
+    
     _exit(1);
+    
 }
 
 int replace_stdout(int new_file_fd)
 {
-    close(STDOUT_FILENO);
+    /*close(STDOUT_FILENO);*/
     dup2(new_file_fd, STDOUT_FILENO);
     close(new_file_fd);
     return 1;
@@ -68,7 +83,7 @@ int replace_stdout(int new_file_fd)
 
 int replace_stdin(int new_file_fd)
 {
-    close(STDIN_FILENO);
+    /*close(STDIN_FILENO);*/
     dup2(new_file_fd, STDIN_FILENO);
     close(new_file_fd);
     return 1;
@@ -111,7 +126,9 @@ int main(int argc, char** argv)
         else if (pid == 0)
         {   fprintf(stderr,"Son Proc\n");
             funcs[fork_num](p);
+            _exit(1);
             fprintf(stderr,"Son Proc done?...\n");
+            break;
         } 
         else
         {
