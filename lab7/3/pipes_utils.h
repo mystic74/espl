@@ -1,6 +1,7 @@
 #ifndef _PIPES_UTILS_H
 #define _PIPES_UTILS_H
 #include "LineParser.h"
+#include <unistd.h>
 
 typedef struct pipe_fds
 {

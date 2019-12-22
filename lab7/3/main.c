@@ -12,6 +12,10 @@
 #include "LineParser.h"
 #include "pipes_utils.h"
 
+
+unsigned int get_cmd_command_count(cmdLine* firstCmd);
+
+
 #define list_size 5
 #define MY_MAX_INPUT 2048 
 #define MAX_CHILDS 300
@@ -21,6 +25,7 @@ void replace_io(cmdLine *cmd_line, char io_need_close[], pipe_fds** pipes)
     pipe_fds* left_pipe;
     pipe_fds* right_pipe;
 
+    fprintf(stderr, "Got here for %s \n", cmd_line->arguments[0]);
     if (cmd_line->outputRedirect)
     {
         close(STDOUT_FILENO);
@@ -37,18 +42,20 @@ void replace_io(cmdLine *cmd_line, char io_need_close[], pipe_fds** pipes)
 
      if ((left_pipe = leftPipe(pipes, cmd_line)))
     {
-        /* fprintf(stderr, "connect %s STDIN from %d\n", cmd_line->arguments[0], left_pipe[0]); */
+        fprintf(stderr, "connect %s STDIN from %d\n", cmd_line->arguments[0], left_pipe->p[0]); 
+        close(left_pipe->p[1]);
         close(STDIN_FILENO);
-        dup2(left_pipe[0], STDIN_FILENO);
-        close(left_pipe[0]);
+        dup2(left_pipe->p[0], STDIN_FILENO);
+        close(left_pipe->p[0]);
     }
 
     if ((right_pipe = rightPipe(pipes, cmd_line)))
     {
-        /* fprintf(stderr, "connect %s STDOU to %d\n", cmd_line->arguments[0], right_pipe[0]); */
+        fprintf(stderr, "connect %s STDOU to %d\n", cmd_line->arguments[0], right_pipe->p[0]);
+        close(right_pipe->p[0]);
         close(STDOUT_FILENO);
-        dup2(right_pipe[1], STDOUT_FILENO);
-        close(right_pipe[1]);
+        dup2(right_pipe->p[1], STDOUT_FILENO);
+        close(right_pipe->p[1]);
     }
 }
 
@@ -193,6 +200,14 @@ int arg_shifter(cmdLine* mycommand, node* command_list, pair_node* env_list)
 
     return 1;
 }
+void curr_dir_with_index(int index)
+{
+    char buf[MAX_ARGUMENTS];
+    if (getcwd(buf, sizeof(buf)) == NULL)
+        perror("getcwd() error");
+    else
+        printf("%s [%d]: ", buf, index);
+}
 
 void curr_dir()
 {
@@ -256,13 +271,13 @@ int main(int argc, char **argv)
     pipe_fds** command_pipes = NULL;
     int* curr_children = NULL;
     int is_blocking = 0;
-
+    int child_index = 0;
     int inner_action;
-
+    int tempstatus = 0;
     while (1)
     {
         inner_action = 1;
-        curr_dir();
+        curr_dir_with_index(command_index);
 
         fgets(input, MY_MAX_INPUT, stdin);
         if (strcmp(input, "quit\n") == 0)
@@ -284,6 +299,13 @@ int main(int argc, char **argv)
         /* Add command to history */
         /*command_list = list_append(command_list, generate_command(input, command_index));*/
         command_list = list_append(command_list, generate_command_from_cmdLine(parsedLine, command_index));
+
+        /* Task 3 changes, adding the command queue thingy*/
+        curr_cmds_in_line = get_cmd_command_count(parsedLine);
+        /*Generate pipes so the every process enters on one end and exists on the other.*/
+        command_pipes = generate_pipes_arr(curr_cmds_in_line);
+        /* Each commands might have a process, we need to follow up on them.*/
+        curr_children = (int*)malloc(sizeof(int) * curr_cmds_in_line);
 
         if (strcmp(parsedLine->arguments[0], "cd") == 0)
         {
@@ -332,36 +354,59 @@ int main(int argc, char **argv)
             inner_action = 0;
         }
 
-        cpid = fork();
-
-        /* In the child scope*/
-        if (cpid == 0)
+        /* Run this in a loop for each sub command...*/
+        for (child_index = 0; child_index < curr_cmds_in_line; child_index++)
         {
-            replace_io(parsedLine, io_need_close, command_pipes);
+            
+            fprintf(stderr, "run number  %d \n", child_index);
+            cpid = fork();
 
-            if (!inner_action)
-                printf("%d", execvp(parsedLine->arguments[0], parsedLine->arguments));
+            /* In the child scope*/
+            if (cpid == 0)
+            {
+                replace_io(parsedLine, io_need_close, command_pipes);
+
+                if (!inner_action)
+                {
+                    fprintf(stderr, "execvp for %s \n", parsedLine->arguments[0]);
+                    fprintf(stdout, "execvp for %s  stdout\n", parsedLine->arguments[0]);
+                    printf("%d", execvp(parsedLine->arguments[0], parsedLine->arguments));
+                }
+                else
+                {
+                    fprintf(stderr, "execvp for %s \n", parsedLine->arguments[0]);
+                    fprintf(stdout, "execvp for %s  stdout\n", parsedLine->arguments[0]);
+                    /* Only one for now... */
+                    list_print(command_list,stdout);
+                }
+                
+                /* Remove from failed process */
+                close_files(io_need_close);
+                freeCmdLines(parsedLine);
+                list_free(command_list);
+                _exit(1);
+            }
+            /* In parent scope, wait for death i guess.*/
             else
             {
-                /* Only one for now... */
-                   list_print(command_list,stdout);
+                close(command_pipes[child_index]->p[1]);
+                is_blocking |= parsedLine->blocking;
+                curr_children[child_index] = cpid;
+                parsedLine = parsedLine->next;
             }
-            
-            /* Remove from failed process */
-            close_files(io_need_close);
-            freeCmdLines(parsedLine);
-            list_free(command_list);
-            _exit(1);
         }
-        /* In parent scope, wait for death i guess.*/
-        else
+
+        for (child_index = 0; child_index < curr_cmds_in_line; child_index++)
         {
-            if (parsedLine->blocking)
+            if (is_blocking)
             {
-                waitpid(-1, &status, 0);
+                waitpid(curr_children[child_index], &tempstatus, 0);
             }
         }
-    
+        free_pipes_arr(command_pipes, curr_cmds_in_line);
+        free(curr_children);
+        
+        
         
         /*  Outside the scopes of child\father so on.
             Just freeing to current command*/

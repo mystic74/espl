@@ -6,8 +6,11 @@ LD_FLAGS         :=
 
 all : shell
 
-shell : main.o LineParser.o my_list.o 3_utils.o pipes_utils.o
-	gcc $(C_FLAGS) $(LD_FLAGS) -o shell main.o LineParser.o 3_utils.o pipes_utils.o
+shell : main.o LineParser.o my_list.o 3_utils.o  cmdLine_utils.o pipes_utils.o
+	gcc $(C_FLAGS) $(LD_FLAGS) -o shell main.o LineParser.o 3_utils.o pipes_utils.o cmdLine_utils.o
+
+cmdLine_utils.o : cmdLine_utils.c
+	gcc $(C_FLAGS) -c -o cmdLine_utils.o cmdLine_utils.c
 
 pipes_utils.o : pipes_utils.c pipes_utils.h
 	gcc $(C_FLAGS) -c -o pipes_utils.o pipes_utils.c
