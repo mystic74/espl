@@ -46,7 +46,7 @@ void replace_io(cmdLine *cmd_line, char io_need_close[], int** pipes)
      if ((left_pipe = leftPipe(pipes, cmd_line)))
     {
         #ifdef VERBOSE
-        fprintf(stderr, "connect %s STDIN from %d\n", cmd_line->arguments[0], left_pipe->p[0]); 
+        fprintf(stderr, "connect %s STDIN from %d\n", cmd_line->arguments[0], left_pipe[0]); 
         #endif
         close(left_pipe[1]);
         close(STDIN_FILENO);
@@ -57,7 +57,7 @@ void replace_io(cmdLine *cmd_line, char io_need_close[], int** pipes)
     if ((right_pipe = rightPipe(pipes, cmd_line)))
     {
         #ifdef VERBOSE
-        fprintf(stderr, "connect %s STDOU to %d\n", cmd_line->arguments[0], right_pipe->p[0]);
+        fprintf(stderr, "connect %s STDOU to %d\n", cmd_line->arguments[0], right_pipe[0]);
         #endif
         close(right_pipe[0]);
         close(STDOUT_FILENO);
@@ -281,6 +281,7 @@ int main(int argc, char **argv)
     int child_index = 0;
     int inner_action;
     int tempstatus = 0;
+
     while (1)
     {
         inner_action = 1;
@@ -395,6 +396,7 @@ int main(int argc, char **argv)
                 
                 /* Remove from failed process */
                 close_files(io_need_close);
+                fprintf(stderr, "erasing line \n");
                 freeCmdLines(parsedLine);
                 list_free(command_list);
                 free_pipes_arr(command_pipes, curr_cmds_in_line);
@@ -410,7 +412,7 @@ int main(int argc, char **argv)
                 parsedLine = parsedLine->next;
             }
         }
-
+        fprintf(stderr, "got to line 415 \n");
         for (child_index = 0; child_index < curr_cmds_in_line; child_index++)
         {
             if (is_blocking)
@@ -418,6 +420,7 @@ int main(int argc, char **argv)
                 waitpid(curr_children[child_index], &tempstatus, 0);
             }
         }
+        fprintf(stderr, "got to line 423 \n");
         free_pipes_arr(command_pipes, curr_cmds_in_line);
         free(curr_children);
         
@@ -425,11 +428,15 @@ int main(int argc, char **argv)
         
         /*  Outside the scopes of child\father so on.
             Just freeing to current command*/
+        fprintf(stderr, "freeing command \n");
         freeCmdLines(parsedLine);
         command_index++;
     }
     /* Free general command list. */
     env_list_free(env_var_list);
     list_free(command_list);
+    fprintf(stderr, "erasing line \n");
+    freeCmdLines(parsedLine);
+
     return 1;
 }
