@@ -20,11 +20,13 @@ unsigned int get_cmd_command_count(cmdLine* firstCmd);
 #define MY_MAX_INPUT 2048 
 #define MAX_CHILDS 300
 
-void replace_io(cmdLine *cmd_line, char io_need_close[], pipe_fds** pipes)
+void replace_io(cmdLine *cmd_line, char io_need_close[], int** pipes)
 {
-    pipe_fds* left_pipe;
-    pipe_fds* right_pipe;
+        
+    int* left_pipe;
+    int* right_pipe;
     #ifdef VERBOSE
+
     fprintf(stderr, "Got here for %s \n", cmd_line->arguments[0]);
     #endif
     if (cmd_line->outputRedirect)
@@ -46,10 +48,10 @@ void replace_io(cmdLine *cmd_line, char io_need_close[], pipe_fds** pipes)
         #ifdef VERBOSE
         fprintf(stderr, "connect %s STDIN from %d\n", cmd_line->arguments[0], left_pipe->p[0]); 
         #endif
-        close(left_pipe->p[1]);
+        close(left_pipe[1]);
         close(STDIN_FILENO);
-        dup2(left_pipe->p[0], STDIN_FILENO);
-        close(left_pipe->p[0]);
+        dup2(left_pipe[0], STDIN_FILENO);
+        close(left_pipe[0]);
     }
 
     if ((right_pipe = rightPipe(pipes, cmd_line)))
@@ -57,10 +59,10 @@ void replace_io(cmdLine *cmd_line, char io_need_close[], pipe_fds** pipes)
         #ifdef VERBOSE
         fprintf(stderr, "connect %s STDOU to %d\n", cmd_line->arguments[0], right_pipe->p[0]);
         #endif
-        close(right_pipe->p[0]);
+        close(right_pipe[0]);
         close(STDOUT_FILENO);
-        dup2(right_pipe->p[1], STDOUT_FILENO);
-        close(right_pipe->p[1]);
+        dup2(right_pipe[1], STDOUT_FILENO);
+        close(right_pipe[1]);
     }
 }
 
@@ -273,7 +275,7 @@ int main(int argc, char **argv)
     char io_need_close[2] = {0, 0};
     
     int curr_cmds_in_line = 0;
-    pipe_fds** command_pipes = NULL;
+    int** command_pipes = NULL;
     int* curr_children = NULL;
     int is_blocking = 0;
     int child_index = 0;
@@ -402,7 +404,7 @@ int main(int argc, char **argv)
             /* In parent scope, wait for death i guess.*/
             else
             {
-                close(command_pipes[child_index]->p[1]);
+                close(command_pipes[child_index][1]);
                 is_blocking |= parsedLine->blocking;
                 curr_children[child_index] = cpid;
                 parsedLine = parsedLine->next;

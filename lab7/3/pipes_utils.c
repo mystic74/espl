@@ -1,23 +1,23 @@
 #include "pipes_utils.h"
 #include <stdlib.h>
 
-pipe_fds** generate_pipes_arr(unsigned int length)
+int** generate_pipes_arr(unsigned int length)
 {
-    pipe_fds** pipes = (pipe_fds**)malloc(length * sizeof(pipe_fds*));
+    int** pipes = (int**)malloc(length * sizeof(int*));
 
     int i;
     for (i = 0; i < length; i++)
     {
         
-        pipe_fds* curr_pipe = (pipe_fds *)malloc(sizeof(pipe_fds));
-        pipe(curr_pipe->p);
+        int* curr_pipe = (int *)malloc(sizeof(int) * 2);
+        pipe(curr_pipe);
         pipes[i] = curr_pipe;
     }
 
     return pipes;
 }
 
-void free_pipes_arr(pipe_fds** pipes, unsigned int amount_of_cmds)
+void free_pipes_arr(int** pipes, unsigned int amount_of_cmds)
 {
     unsigned int index;
     for (index = 0; index < amount_of_cmds; index++)
@@ -28,7 +28,7 @@ void free_pipes_arr(pipe_fds** pipes, unsigned int amount_of_cmds)
     free(pipes);
 }
 
-pipe_fds* leftPipe(pipe_fds** pipes, cmdLine* pCmdLine)
+int* leftPipe(int** pipes, cmdLine* pCmdLine)
 {
     if (pCmdLine->idx == 0)
         return NULL;
@@ -36,7 +36,7 @@ pipe_fds* leftPipe(pipe_fds** pipes, cmdLine* pCmdLine)
     return pipes[pCmdLine->idx - 1];
 }
 
-pipe_fds* rightPipe(pipe_fds** pipes, cmdLine* pCmdLine)
+int* rightPipe(int** pipes, cmdLine* pCmdLine)
 {
     if (!pCmdLine->next)
         return NULL;

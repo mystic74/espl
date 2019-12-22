@@ -3,13 +3,10 @@
 #include "LineParser.h"
 #include <unistd.h>
 
-typedef struct pipe_fds
-{
-    int p[2];
-}pipe_fds;
 
-pipe_fds** generate_pipes_arr(unsigned int length);
-void free_pipes_arr(pipe_fds** pipes, unsigned int amount_of_cmds);
-pipe_fds *leftPipe(pipe_fds **pipes, cmdLine *pCmdLine);
-pipe_fds *rightPipe(pipe_fds **pipes, cmdLine *pCmdLine);
+
+int** generate_pipes_arr(unsigned int length);
+void free_pipes_arr(int** pipes, unsigned int amount_of_cmds);
+int *leftPipe(int **pipes, cmdLine *pCmdLine);
+int *rightPipe(int **pipes, cmdLine *pCmdLine);
 #endif
