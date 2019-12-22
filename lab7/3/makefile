@@ -1,4 +1,4 @@
-DEBUG_FLAGS  := -g3
+DEBUG_FLAGS  := -g3 #-DVERBOSE
 
 
 C_FLAGS          := $(DEBUG_FLAGS) -ansi -Wall

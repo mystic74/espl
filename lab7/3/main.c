@@ -24,8 +24,9 @@ void replace_io(cmdLine *cmd_line, char io_need_close[], pipe_fds** pipes)
 {
     pipe_fds* left_pipe;
     pipe_fds* right_pipe;
-
+    #ifdef VERBOSE
     fprintf(stderr, "Got here for %s \n", cmd_line->arguments[0]);
+    #endif
     if (cmd_line->outputRedirect)
     {
         close(STDOUT_FILENO);
@@ -42,7 +43,9 @@ void replace_io(cmdLine *cmd_line, char io_need_close[], pipe_fds** pipes)
 
      if ((left_pipe = leftPipe(pipes, cmd_line)))
     {
+        #ifdef VERBOSE
         fprintf(stderr, "connect %s STDIN from %d\n", cmd_line->arguments[0], left_pipe->p[0]); 
+        #endif
         close(left_pipe->p[1]);
         close(STDIN_FILENO);
         dup2(left_pipe->p[0], STDIN_FILENO);
@@ -51,7 +54,9 @@ void replace_io(cmdLine *cmd_line, char io_need_close[], pipe_fds** pipes)
 
     if ((right_pipe = rightPipe(pipes, cmd_line)))
     {
+        #ifdef VERBOSE
         fprintf(stderr, "connect %s STDOU to %d\n", cmd_line->arguments[0], right_pipe->p[0]);
+        #endif
         close(right_pipe->p[0]);
         close(STDOUT_FILENO);
         dup2(right_pipe->p[1], STDOUT_FILENO);
@@ -357,8 +362,9 @@ int main(int argc, char **argv)
         /* Run this in a loop for each sub command...*/
         for (child_index = 0; child_index < curr_cmds_in_line; child_index++)
         {
-            
+            #ifdef VERBOSE
             fprintf(stderr, "run number  %d \n", child_index);
+            #endif
             cpid = fork();
 
             /* In the child scope*/
@@ -368,14 +374,19 @@ int main(int argc, char **argv)
 
                 if (!inner_action)
                 {
+
+                    #ifdef VERBOSE
                     fprintf(stderr, "execvp for %s \n", parsedLine->arguments[0]);
                     fprintf(stdout, "execvp for %s  stdout\n", parsedLine->arguments[0]);
+                    #endif
                     printf("%d", execvp(parsedLine->arguments[0], parsedLine->arguments));
                 }
                 else
                 {
+                    #ifdef VERBOSE
                     fprintf(stderr, "execvp for %s \n", parsedLine->arguments[0]);
                     fprintf(stdout, "execvp for %s  stdout\n", parsedLine->arguments[0]);
+                    #endif
                     /* Only one for now... */
                     list_print(command_list,stdout);
                 }
@@ -384,6 +395,8 @@ int main(int argc, char **argv)
                 close_files(io_need_close);
                 freeCmdLines(parsedLine);
                 list_free(command_list);
+                free_pipes_arr(command_pipes, curr_cmds_in_line);
+                free(curr_children);
                 _exit(1);
             }
             /* In parent scope, wait for death i guess.*/
