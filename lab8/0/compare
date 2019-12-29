@@ -1,0 +1,2 @@
+
+cmp -l $1 $2 | gawk '{printf "%08X %02X %02X\n", (, strtonum(0[), strtonum(0{)}'
