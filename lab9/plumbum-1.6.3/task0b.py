@@ -94,3 +94,11 @@ def high_grade_info():
     freq_dict = dict_from_error_code_freq()
     return max(freq_dict.items(), key=operator.itemgetter(1))[0]
 
+def print_high_info():
+    print(high_grade_info())
+
+def add_factor():
+    value_dict = get_error_codes_dict()
+    max_error = high_grade_info()
+    value_dict[max_error] = 0
+    print_student_grade(value_dict)
