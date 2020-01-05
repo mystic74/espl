@@ -18,11 +18,15 @@ def get_error_codes():
              uniq["-c"])
     return chain 
 
-def task0b():
-    print("The students names are\n {}".format(get_student_names()))
-    print("The number of studet is : {}".format(get_number_of_students()))
-    print("The error codes are:\n{}", get_error_codes())
+def get_number_of_error_codes():
+    return (get_error_codes() | wc["-l"])
 
+def task0b():
+    print("The students names are\n {}".format(get_student_names()()))
+    print("The number of students is : {}".format(get_number_of_students()()))
+    print("The error codes are:\n{}".format(get_error_codes()()))
+    print("The number of error codes is : {}".format(get_number_of_error_codes()()))
+    
 def dict_from_error_code_freq():
     return_dict = dict()
     in_list = get_error_codes()().strip('\t').split()    
