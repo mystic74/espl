@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="startbootstrap-agency-gh-pages/css/agency.css">
+<script>
+function validateEmail(emailID) {
+         atpos = emailID.indexOf("@");
+         dotpos = emailID.lastIndexOf(".");
+         
+         if (atpos < 1 || ( dotpos - atpos < 2 )) {
+            alert("Please enter correct email ID")
+            document.myForm.mail.focus() ;
+            return false;
+         }
+      }
+    
+function validateForm() {
+  var fname = document.forms["myForm"]["fname"].value;
+  var mail = document.forms["myForm"]["mail"].value;
+  var msg = document.forms["myForm"]["msg"].value;
+  if (fname == "") {
+    alert("Name must be filled out");
+    return false
+  }
+  if (msg == "")
+  {
+    alert("Message must be filled out");
+    return false
+  }
+  if (mail == "")
+  {
+    alert("Email must be filled out");
+    return false
+  }
+
+  if (validateEmail(mail) == false)
+  {
+    return false
+  }
+
+  alert('All is well')
+  return true
+  
+}
+</script>
+</head>
+<body>
+
+<form name="myForm"  action="http://localhost:3000/sendmail" onsubmit="return validateForm()" method="post">
+  Name: <input type="text" name="fname"> <br>
+  Email address: <input type="text" name="mail"> <br>
+  Message: <input type="text" name="msg"> <br>
+  <input type="submit" value="Submit">
+</form>
+
+</body>
+</html>
